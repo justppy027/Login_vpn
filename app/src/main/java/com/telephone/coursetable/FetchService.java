@@ -40,6 +40,7 @@ import com.telephone.coursetable.Database.TermInfoDao;
 import com.telephone.coursetable.Database.User;
 import com.telephone.coursetable.Database.UserDao;
 import com.telephone.coursetable.Fetch.LAN;
+import com.telephone.coursetable.Fetch.WAN;
 import com.telephone.coursetable.Http.HttpConnectionAndCode;
 import com.telephone.coursetable.OCR.OCR;
 
@@ -174,7 +175,6 @@ public class FetchService extends IntentService {
         final String NAME = "getListForListAppWidgets()";
         if (
                 MyApp.getRunning_activity().equals(MyApp.RunningActivity.LOGIN) ||
-                        MyApp.getRunning_activity().equals(MyApp.RunningActivity.LOGIN_VPN) ||
                         MyApp.getRunning_activity().equals(MyApp.RunningActivity.CHANGE_HOURS) ||
                         MyApp.getRunning_activity().equals(MyApp.RunningActivity.CHANGE_TERMS) ||
                         MyApp.isRunning_login_thread()
@@ -294,8 +294,217 @@ public class FetchService extends IntentService {
     }
 
     private void service_fetch_wan(){
-//        lan_notify_login_wrong_password();
+        final String NAME = "service_fetch_wan()";
+        Resources r = getResources();
+        if (
+                !MyApp.getRunning_activity().equals(MyApp.RunningActivity.NULL) || MyApp.isRunning_login_thread()
+        ){
+            Log.e(NAME, "skip | some activity is active or data is being updated");
+            return;
+        }
+        wan_start();
+        List<User> ac_users = MyApp.getCurrentAppDB().userDao().getActivatedUser();
+        if (ac_users.isEmpty()){
+            Log.e(NAME, "skip | no activated user");
+            wan_end();
+            return;
+        }
+        User user = ac_users.get(0);
+        StringBuilder cookie_builder;
+
+        //----------------
+        String cookie = Login_vpn.vpn_login(FetchService.this,"1800301127","080291");
+
+        for (int i = 0; true; i++){
+            cookie_builder = new StringBuilder();
+
+            HttpConnectionAndCode get_checkcode_res = WAN.checkcode(FetchService.this,cookie);
+            if (get_checkcode_res.obj == null){
+                Log.e(NAME, "fail | get check-code fail");
+                wan_end();
+                return;
+            }
+            cookie_builder.append(get_checkcode_res.cookie);
+            HttpConnectionAndCode login_res = Login_vpn.login(
+                    FetchService.this,
+                    user.username,
+                    user.password,
+                    OCR.getTextFromBitmap(FetchService.this, (Bitmap) get_checkcode_res.obj, MyApp.ocr_lang_code),
+                    cookie,
+                    cookie_builder
+            );
+            if (login_res.code == 0){
+                break;
+            }else if(login_res.comment != null && login_res.comment.contains("验证码")){
+                continue;
+            }else {
+                Log.e(NAME, "fail | login fail");
+                wan_fetch_service_loginFail(login_res);
+                wan_end();
+                return;
+            }
+        }
+        PersonInfoDao pdao_test = MyApp.getCurrentAppDB_Test().personInfoDao();
+        TermInfoDao tdao_test = MyApp.getCurrentAppDB_Test().termInfoDao();
+        GoToClassDao gdao_test = MyApp.getCurrentAppDB_Test().goToClassDao();
+        ClassInfoDao cdao_test = MyApp.getCurrentAppDB_Test().classInfoDao();
+        GraduationScoreDao gsdao_test = MyApp.getCurrentAppDB_Test().graduationScoreDao();
+        SharedPreferences pref_test = MyApp.getCurrentSharedPreference_Test();
+        GradesDao grdao_test = MyApp.getCurrentAppDB_Test().gradesDao();
+        ExamInfoDao edao_test = MyApp.getCurrentAppDB_Test().examInfoDao();
+        SharedPreferences.Editor editor_test = MyApp.getCurrentSharedPreferenceEditor_Test();
+        PersonInfoDao pdao = MyApp.getCurrentAppDB().personInfoDao();
+        TermInfoDao tdao = MyApp.getCurrentAppDB().termInfoDao();
+        GoToClassDao gdao = MyApp.getCurrentAppDB().goToClassDao();
+        ClassInfoDao cdao = MyApp.getCurrentAppDB().classInfoDao();
+        GraduationScoreDao gsdao = MyApp.getCurrentAppDB().graduationScoreDao();
+        SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
+        GradesDao grdao = MyApp.getCurrentAppDB().gradesDao();
+        ExamInfoDao edao = MyApp.getCurrentAppDB().examInfoDao();
+        UserDao udao = MyApp.getCurrentAppDB().userDao();
+        Login.deleteOldDataFromDatabase(
+                gdao_test, cdao_test, tdao_test, pdao_test, gsdao_test, grdao_test, edao_test
+        );
+        editor_test.clear().commit();
+        boolean fetch_merge_res = Login_vpn.fetch_merge(
+                FetchService.this,
+                cookie,
+                pdao_test,
+                tdao_test,
+                gdao_test,
+                cdao_test,
+                gsdao_test,
+                grdao_test,
+                edao_test,
+                editor_test
+        );
+        if (!fetch_merge_res){
+            Log.e(NAME, "fail | fetch fail");
+            wan_end();
+            return;
+        }
+        /** get old delay_week */
+        List<Integer> delay_week_to_apply = new LinkedList<>();
+        List<TermInfo> new_terms = tdao_test.selectAll();
+        for (TermInfo new_term : new_terms){
+            List<Integer> old_delay_list = tdao.getDelayWeekNum(new_term.term);
+            if (old_delay_list.isEmpty()){
+                delay_week_to_apply.add(0);
+            }else {
+                delay_week_to_apply.add(old_delay_list.get(0));
+            }
+        }
+        /** deactivate all user */
+        Log.e(NAME, "deactivate all user...");
+        udao.disableAllUser();
+        /** migrate the pulled data to the database */
+        Log.e(NAME, "migrate the pulled data to the database...");
+        wan_merge(pdao, pdao_test, tdao, tdao_test, gdao, gdao_test, cdao, cdao_test, gsdao, gsdao_test, editor, pref_test, grdao, grdao_test, delay_week_to_apply, edao, edao_test);
+        /** re-insert user */
+        Log.e(NAME, "re-insert user...");
+        udao.insert(new User(user.username, user.password, user.aaw_password, user.vpn_password));
+        /** activate user */
+        Log.e(NAME, "activate user...");
+        udao.activateUser(user.username);
+        List<User> ac_list = udao.getActivatedUser();
+        if (!ac_list.isEmpty()){
+            Log.e(NAME, "success | user activated: " + ac_list.get(0).username + " " + pdao.selectAll().get(0).name);
+        }else {
+            Log.e(NAME, "fail | no user activated");
+        }
+        wan_end();
     }
+
+    private void wan_merge(PersonInfoDao p, PersonInfoDao p_t, TermInfoDao t, TermInfoDao t_t, GoToClassDao g, GoToClassDao g_t,
+                           ClassInfoDao c, ClassInfoDao c_t, GraduationScoreDao gs, GraduationScoreDao gs_t,
+                           SharedPreferences.Editor editor, SharedPreferences pref_t,
+                           GradesDao gr, GradesDao gr_t, List<Integer> delay_week_to_apply,
+                           ExamInfoDao e, ExamInfoDao e_t){
+
+        List<PersonInfo> p_t_all = p_t.selectAll();
+        for (PersonInfo p_a : p_t_all){
+            p.insert(p_a);
+        }
+        List<TermInfo> t_t_all = t_t.selectAll();
+        for (int i = 0; i < t_t_all.size(); i++){
+            TermInfo t_a = t_t_all.get(i);
+            t_a.setDelay(delay_week_to_apply.get(i));
+            t.insert(t_a);
+        }
+        List<GoToClass> g_t_all = g_t.selectAll();
+        for (GoToClass g_a : g_t_all){
+            g.insert(g_a);
+        }
+        List<ClassInfo> c_t_all = c_t.selectAll();
+        for (ClassInfo c_a : c_t_all){
+            c.insert(c_a);
+        }
+        List<GraduationScore> gs_t_all = gs_t.selectAll();
+        for (GraduationScore gs_a : gs_t_all){
+            gs.insert(gs_a);
+        }
+//        Set<String> keys = pref_t.getAll().keySet();
+//        for (String key : keys){
+//            String value = pref_t.getString(key, null);
+//            editor.putString(key, value);
+//        }
+//        editor.commit();
+        List<Grades> gr_t_all = gr_t.selectAll();
+        for (Grades gr_a : gr_t_all){
+            gr.insert(gr_a);
+        }
+        List<ExamInfo> e_t_all = e_t.selectAll();
+        for (ExamInfo e_a : e_t_all){
+            e.insert(e_a);
+        }
+
+    }
+
+    private void wan_start(){
+        final String NAME = "wan_start()";
+        Log.e(NAME, "start...");
+        MyApp.setRunning_fetch_service(true);
+        if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.MAIN) && MyApp.getRunning_main() != null){
+            Log.e(NAME, "refresh main activity...");
+            MyApp.getRunning_main().refresh();
+        }
+    }
+
+    private void wan_end(){
+        final String NAME = "wan_end()";
+        Log.e(NAME, "end...");
+        MyApp.setRunning_fetch_service(false);
+        if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.MAIN) && MyApp.getRunning_main() != null){
+            Log.e(NAME, "refresh main activity...");
+            MyApp.getRunning_main().refresh();
+        }
+    }
+
+    private void wan_notify_login_wrong_password(){
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Notification notification =
+                new NotificationCompat.Builder(this, MyApp.notification_channel_id_normal)
+                        .setContentTitle("同步失败了 ಥ_ಥ")
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText("您的学分制系统密码是否已更改? 请再次登录以更新您的密码 >>"))
+                        .setSmallIcon(R.drawable.feather_pen_trans)
+                        .setContentIntent(pendingIntent)
+                        .setAutoCancel(true)
+                        .setTicker("同步失败了 ಥ_ಥ")
+                        .build();
+        NotificationManagerCompat.from(this).notify(MyApp.notification_id_fetch_service_lan_password_wrong, notification);
+    }
+
+    private void wan_fetch_service_loginFail(HttpConnectionAndCode res){
+        final String NAME = "lan_fetch_service_loginFail()";
+        Log.e(NAME,"it fail...");
+        if (res.comment != null && res.comment.contains("密码")) {
+            wan_notify_login_wrong_password();
+        }
+    }
+
+
 
     private void service_fetch_lan(){
         final String NAME = "service_fetch_lan()";
