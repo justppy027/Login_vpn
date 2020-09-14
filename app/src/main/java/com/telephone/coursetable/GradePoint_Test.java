@@ -18,14 +18,18 @@ import java.util.List;
 public class GradePoint_Test {
 
     //得到一段html文本
-    public static String grade_point_html(Context c,String cookie){
+    public static String grade_point_html( Context c, String cookie){
 
         Resources r = c.getResources();
         HttpConnectionAndCode gpc = Post.post(
-                "http://172.16.1.99/student/xuefenji.asp\n",
-                null,
-                " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18363",
-                "http://172.16.1.99/student/xuefenji.asp",
+                "https://v.guet.edu.cn/http/77726476706e69737468656265737421a1a013d2766626013051d0/student/xuefenji.asp?",
+                new String[]{
+                        "xn=",
+                        "lwPageSize=1000",
+                        "lwBtnquery=(无法对值进行解码)"
+                },
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36 Edg/85.0.564.51",
+                "https://v.guet.edu.cn/http/77726476706e69737468656265737421a1a013d2766626013051d0/student/xuefenji.asp",
                 null,
                 cookie,
                 null,
@@ -43,20 +47,23 @@ public class GradePoint_Test {
 
 
     //处理得到的html文本
-    public static List<String> grade_point_array(String html){
-
-        String sid = null;
-        String grade_point_aver = null;
-        String Calculate_Type = null;
+    public static List<String> grade_point_array(Context c, String cookie){
 
         List<String> gp_arr = new ArrayList<>();
-        Document doc = Jsoup.parse(html);
-        Elements element1 = doc.select("html > body > table > tr > td#pagecontrol > table > tr > th ");
-        Elements element2 = doc.select("html > body > table >td#pagecontrol > table > tr > td > B > font ");
+        String html = GradePoint_Test.grade_point_html(c, cookie);
+        Elements element1;
+        Elements element2;
+        Document doc;
 
-        gp_arr.add(element1.get(0).ownText());
+        do {
+            doc = Jsoup.parse( html );
+            element1 = doc.select("html > body > table > tbody > tr > td > table > tbody > tr > th");
+            element2 = doc.select("html > body > table > tbody > tr > td > table > tbody > tr > td > B > font ");
+        }while( element1.isEmpty() || element2.isEmpty() );
+
+        gp_arr.add(element1.get(3).ownText());
         gp_arr.add(element2.get(0).ownText());
-        gp_arr.add(element1.get(1).ownText());
+        gp_arr.add(element1.get(4).ownText());
 
         return gp_arr;
     }

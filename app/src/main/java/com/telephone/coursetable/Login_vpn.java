@@ -577,9 +577,6 @@ public class Login_vpn extends AppCompatActivity {
                 //get cookie
                 cookie = Login_vpn.vpn_login(Login_vpn.this, sid, vpn_pwd);
 
-                String sss = GradePoint_Test.grade_point_html(Login_vpn.this, cookie);
-                List<String> saddsad = GradePoint_Test.grade_point_array(sss);
-
                 String tip;
                 //fail
                 if (cookie == null) {
