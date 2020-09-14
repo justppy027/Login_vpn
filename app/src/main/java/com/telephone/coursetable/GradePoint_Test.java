@@ -51,8 +51,8 @@ public class GradePoint_Test {
 
         List<String> gp_arr = new ArrayList<>();
         Document doc = Jsoup.parse(html);
-        Elements element1 = doc.select("html > body > table > tr > th ");
-        Elements element2 = doc.select("html > body > table > tr > td > B > font ");
+        Elements element1 = doc.select("html > body > table > tr > td#pagecontrol > table > tr > th ");
+        Elements element2 = doc.select("html > body > table >td#pagecontrol > table > tr > td > B > font ");
 
         gp_arr.add(element1.get(0).ownText());
         gp_arr.add(element2.get(0).ownText());
