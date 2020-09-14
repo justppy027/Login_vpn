@@ -624,8 +624,9 @@ public class Login_vpn extends AppCompatActivity {
         new Thread(()->{
 
             HttpConnectionAndCode login_res = login(Login_vpn.this, sid, sys_pwd, ck, cookie, cookie_builder);
+            HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd, cookie);
 
-            if(login_res.code != 0){
+            if( login_res.code != 0 || outside_login_res.code != 0 ){
 
                 //-6
                 if (login_res.comment != null && login_res.comment.contains("验证码")) {
@@ -643,52 +644,46 @@ public class Login_vpn extends AppCompatActivity {
                 //login_res.code = -5;
 
 
-                if(login_res.comment != null && login_res.comment.contains("密码")) {
-                    tip = getResources().getString(R.string.login_fail_pwd_title);
-
-                }else if(login_res.comment != null && login_res.comment.contains("网络")){
+                if ( login_res.comment != null && login_res.comment.contains("密码") ) {
+                    tip = getResources().getString(R.string.lan_snackbar_vpn_pwd_login_fail);
+                }else if ( login_res.comment != null && login_res.comment.contains("成功") ){
+                    tip = "系统验证成功";
+                }else {
                     tip = getResources().getString(R.string.snackbar_login_fail_vpn);
-
-                }else if(login_res.comment != null && login_res.comment.contains("成功")){
-                    tip = "学分系统验证成功";
                 }
 
+                if ( outside_login_res.comment != null && outside_login_res.code == -6 && tip.equals("系统验证成功") ) {
+                    tip = getResources().getString(R.string.lan_snackbar_outside_test_login_fail);
+                }else if ( tip.equals("系统验证成功") ){
+                    tip = getResources().getString(R.string.snackbar_login_fail_vpn);
+                }
 
                 runOnUiThread((Runnable)()->{
-                    Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
-
                     //
-                    if( tip.equals(getResources().getString(R.string.login_fail_pwd_title)) ){
+                    if( tip.equals(getResources().getString(R.string.lan_snackbar_vpn_pwd_login_fail)) ){
+                        Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
                         ((EditText)findViewById(R.id.sys_pwd_input)).setText("");
                         setFocusToEditText((EditText)findViewById(R.id.sys_pwd_input));
                         unlock2(true);
                         return;
                     }else if(tip.equals(getResources().getString(R.string.snackbar_login_fail_vpn))){
                         //请检查网络连接
+                        Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
+                        unlock2(true);
+                        return;
+                    }else if (tip.equals(getResources().getString(R.string.lan_snackbar_outside_test_login_fail))){
+                        Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
+                        ((EditText)findViewById(R.id.aaw_pwd_input)).setText("");
+                        setFocusToEditText((EditText)findViewById(R.id.aaw_pwd_input));
+                        unlock2(true);
                         return;
                     }
+                    Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
                 });
 
             }
 
-            HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd, cookie);
-
-            if (outside_login_res.code != 0){
-                runOnUiThread((Runnable) () -> {
-
-                    Snackbar.make(view, getResources().getString(R.string.lan_snackbar_outside_test_login_fail), BaseTransientBottomBar.LENGTH_SHORT).show();
-                    ((EditText)findViewById(R.id.aaw_pwd_input)).setText("");
-                    setFocusToEditText((EditText)findViewById(R.id.aaw_pwd_input));
-                    unlock2(true);
-
-                });
-
-                return;
-            }
-
-
-
-            if( login_res.code == 0 ) {
+            if( login_res.code == 0 && outside_login_res.code == 0 ) {
                 /** get shared preference and its editor */
                 final SharedPreferences shared_pref = MyApp.getCurrentSharedPreference();
                 final SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
