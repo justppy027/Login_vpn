@@ -40,14 +40,13 @@ public class WAN {
                 cookie,
                 "]}",
                 null,
-                null,
+                r.getString(R.string.lan_get_person_success_contain_response_text),
                 null,
                 null
         );
     }
 
 
-    //
     public static HttpConnectionAndCode termInfo(Context c,String cookie){
         Resources r = c.getResources();
         HttpConnectionAndCode rss =  Get.get(

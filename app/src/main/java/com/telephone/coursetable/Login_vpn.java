@@ -73,8 +73,8 @@ public class Login_vpn extends AppCompatActivity {
     private SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
 
     private String sid = null;
-    private String pwd = null;
-    private String aaw_pwd = null;
+    private String aaw_pwd = null;//教务处密码
+    private String sys_pwd = null;//学分系统密码
     private String vpn_pwd = null;
     private String cookie = null;
     private String ck = null;
@@ -82,45 +82,16 @@ public class Login_vpn extends AppCompatActivity {
     private StringBuilder cookie_builder;
     private String tip;
 
-//    public void changeCode(View view) {
-//        final String NAME = "changeCode()";
-//        EditText et = (EditText)findViewById(R.id.checkcode_input);
-//        ImageView im = (ImageView)findViewById(R.id.imageView_checkcode_vpn);
-//
-//        //clear old image
-//        im.setImageDrawable(getResources().getDrawable(R.drawable.network, getTheme()));
-//
-//        new Thread(() -> {
-//
-//            HttpConnectionAndCode res = WAN.checkcode(Login_vpn.this,cookie);
-//
-//            Log.e(NAME + " " + "the code of get check code res", res.code+"");
-//
-//            if (res.obj != null){
-//                String ocr = OCR.getTextFromBitmap(Login_vpn.this, (Bitmap)res.obj, MyApp.ocr_lang_code);
-//                cookie_builder.append(res.cookie);
-//                runOnUiThread(() -> {
-//                    im.setImageBitmap((Bitmap) (res.obj));
-//                    et.setText(ocr);
-//                    et.clearFocus();
-//                    et.setVisibility(View.INVISIBLE);
-//                });
-//            }
-//        }).start();
-//
-//    }
-
-
+    //clear
     private void first_login() {
         setContentView(R.layout.activity_login_vpn_no_checkcode);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
         ((TextView)findViewById(R.id.sid_input)).setText("1800301127");
         ((TextView)findViewById(R.id.passwd_input)).setText("080291");
 
+   }
 
-    }
-
-
+    //clear
     private void system_login(String sid) {
 
         new Thread(new Runnable() {
@@ -140,18 +111,13 @@ public class Login_vpn extends AppCompatActivity {
                     ((TextView) findViewById(R.id.sid_input)).setEnabled(false);
 
                     ((TextView) findViewById(R.id.passwd_input)).setText("080291");
-                    ((TextView) findViewById(R.id.aaw_passwd_input)).setText("080291");
-
-                    //((ImageView)findViewById(R.id.imageView_checkcode_vpn)).performClick();
+                    ((TextView) findViewById(R.id.aaw_pwd_input)).setText("080291");
 
                     ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
 
                 });
             }
         }).start();
-
-
-
     }
 
 
@@ -178,7 +144,7 @@ public class Login_vpn extends AppCompatActivity {
     }
 
 
-
+    //clear
     private void lock(){
         ((Button)findViewById(R.id.button)).setEnabled(false);
         ((Button)findViewById(R.id.button2)).setEnabled(false);
@@ -186,7 +152,7 @@ public class Login_vpn extends AppCompatActivity {
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.VISIBLE);
     }
 
-
+    //clear
     private void unlock(boolean clickable){
         ((Button)findViewById(R.id.button)).setEnabled(clickable);
         ((Button)findViewById(R.id.button2)).setEnabled(clickable);
@@ -194,7 +160,7 @@ public class Login_vpn extends AppCompatActivity {
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
     }
 
-
+    //clear
     private void setFocusToEditText(EditText et) {
         if (et != null) {
             et.requestFocus();
@@ -211,13 +177,12 @@ public class Login_vpn extends AppCompatActivity {
         }
     }
 
-
+    //clear
     private void clearIMAndFocus() {
         EditText ets = (EditText) findViewById(R.id.sid_input);
         EditText etp = (EditText) findViewById(R.id.passwd_input);
-        EditText etc = (EditText) findViewById(R.id.checkcode_input);
-        EditText eta = (EditText) findViewById(R.id.aaw_passwd_input);
-        EditText etv = (EditText) findViewById(R.id.vpn_passwd_input);
+        EditText etw = (EditText) findViewById(R.id.aaw_pwd_input);
+
 
         if (ets != null) {
             ets.setEnabled(!ets.isEnabled());
@@ -229,15 +194,15 @@ public class Login_vpn extends AppCompatActivity {
             etp.setEnabled(!etp.isEnabled());
             etp.clearFocus();
         }
-        if (etc != null) {
-            etc.setEnabled(!etc.isEnabled());
-            etc.setEnabled(!etc.isEnabled());
-            etc.clearFocus();
+        if (etw != null) {
+            etw.setEnabled(!etw.isEnabled());
+            etw.setEnabled(!etw.isEnabled());
+            etw.clearFocus();
         }
     }
 
 
-
+    //clear
     public static void deleteOldDataFromDatabase(GoToClassDao gdao, ClassInfoDao cdao, TermInfoDao tdao, PersonInfoDao pdao, GraduationScoreDao gsdao, GradesDao grdao, ExamInfoDao edao) {
         gdao.deleteAll();
         cdao.deleteAll();
@@ -248,7 +213,7 @@ public class Login_vpn extends AppCompatActivity {
         edao.deleteAll();
     }
 
-
+    //clear
     public static HttpConnectionAndCode login(Context c, String sid, String pwd, String ckcode, String cookie, @Nullable StringBuilder builder) {
         final String NAME = "login()";
         Resources r = c.getResources();
@@ -257,7 +222,7 @@ public class Login_vpn extends AppCompatActivity {
                 "https://v.guet.edu.cn/http/77726476706e69737468656265737421f2fc4b8b69377d556a468ca88d1b203b/Login/SubmitLogin",
                 null,
                 r.getString(R.string.user_agent),
-                r.getString(R.string.wan_vpn_login_referer),//"https://v.guet.edu.cn/http/77726476706e69737468656265737421f2fc4b8b69377d556a468ca88d1b203b/?mCode=000708",
+                r.getString(R.string.wan_vpn_login_referer),
                 body,
                 cookie,
                 "}",
@@ -279,6 +244,37 @@ public class Login_vpn extends AppCompatActivity {
         Log.e(NAME, "body: " + body + " code: " + login_res.code + " resp_code: " + login_res.resp_code + " comment/msg: " + login_res.comment);
         return login_res;
     }
+
+    //教务处登录
+    public static HttpConnectionAndCode outside_login_test(Context c, final String sid, final String pwd){
+        final String NAME = "outside_login_test()";
+        Resources r = c.getResources();
+        String body = "username=" + sid + "&passwd=" + pwd + "&login=%B5%C7%A1%A1%C2%BC";
+        Log.e(NAME + " " + "body", body);
+        HttpConnectionAndCode login_res = Post.post(
+                "https://v.guet.edu.cn/http/77726476706e69737468656265737421a1a013d2766626013051d0/student/public/login.asp",
+                null,
+                r.getString(R.string.user_agent),
+                "https://v.guet.edu.cn/http/77726476706e69737468656265737421e5e3529f69377d556a468ca88d1b203b/",
+                body,
+                null,
+                null,
+                r.getString(R.string.cookie_delimiter),
+                null,
+                null,
+                false
+        );
+        if (login_res.code == 0 && login_res.resp_code == 302){
+            Log.e(NAME + " " + "login status", "success");
+        }else {
+            if (login_res.code == 0){
+                login_res.code = -6;
+            }
+            Log.e(NAME + " " + "login status", "fail" + " code: " + login_res.code);
+        }
+        return login_res;
+    }
+
 
     /**
      * @param pwd origin password
@@ -468,7 +464,7 @@ public class Login_vpn extends AppCompatActivity {
                     udao.deleteUser(sid);
                     Log.e(NAME + " " + "user deleted", sid);
                     updateUserNameAutoFill();
-                    //updateUserNameAutoFill(true);
+
                     runOnUiThread((Runnable) () -> {
                         ((AutoCompleteTextView) findViewById(R.id.sid_input)).setText("");
                         ((AutoCompleteTextView) findViewById(R.id.passwd_input)).setText("");
@@ -484,6 +480,7 @@ public class Login_vpn extends AppCompatActivity {
      * - false : something went wrong
      * @non-ui 1. pull all user-related data from internet
      * 2. save the pulled data to database and shared preference
+     * @clear
      */
     public static boolean fetch_merge(Context c, String cookie, PersonInfoDao pdao, TermInfoDao tdao,
                                       GoToClassDao gdao, ClassInfoDao cdao, GraduationScoreDao gsdao,
@@ -491,7 +488,6 @@ public class Login_vpn extends AppCompatActivity {
         final String NAME = "fetch_merge()";
         HttpConnectionAndCode res;
         HttpConnectionAndCode res_add;
-
 
         res = WAN.personInfo(c, cookie);
         res_add = WAN.studentInfo(c, cookie);
@@ -562,8 +558,8 @@ public class Login_vpn extends AppCompatActivity {
     }
 
 
-
-    public void login_thread_1(View view){
+    //clear
+    public void login_thread_1(View view) {
         //after click button login , it will go to login_thread
 
         lock();
@@ -571,7 +567,6 @@ public class Login_vpn extends AppCompatActivity {
 
         sid = ((TextView) findViewById(R.id.sid_input)).getText().toString();
         vpn_pwd = ((TextView) findViewById(R.id.passwd_input)).getText().toString();
-
 
 
         new Thread(new Runnable() {
@@ -595,69 +590,70 @@ public class Login_vpn extends AppCompatActivity {
                 }
 
 
-                runOnUiThread(()->{
-                    Toast.makeText( Login_vpn.this , tip, Toast.LENGTH_SHORT).show();
-                    if(tip.equals("请检查用户名、密码和网络是否正确。")) {
-                        ((EditText)findViewById(R.id.passwd_input)).setText("");
-                        setFocusToEditText((EditText)findViewById(R.id.passwd_input));
-                    }
-
-                    else{
+                runOnUiThread(() -> {
+                    Toast.makeText(Login_vpn.this, tip, Toast.LENGTH_SHORT).show();
+                    if (tip.equals("请检查用户名、密码和网络是否正确。")) {
+                        ((EditText) findViewById(R.id.passwd_input)).setText("");
+                        setFocusToEditText((EditText) findViewById(R.id.passwd_input));
+                    } else {
                         system_login(sid);
                     }
                     unlock(true);
                 });
             }
         }).start();
-
-
-
-
     }
+
+
 
     public void login_thread_2(View view){
         lock();
         clearIMAndFocus();
 
-        pwd = ((TextView) findViewById(R.id.passwd_input)).getText().toString();
-        aaw_pwd = ((TextView) findViewById(R.id.aaw_passwd_input)).getText().toString();
+        aaw_pwd = ((TextView) findViewById(R.id.passwd_input)).getText().toString();
+        sys_pwd = ((TextView) findViewById(R.id.aaw_pwd_input)).getText().toString();
 
 
         new Thread(()->{
 
-            HttpConnectionAndCode login_res = login(Login_vpn.this, sid, pwd, ck, cookie, cookie_builder);
-            HttpConnectionAndCode res = WAN.checkcode(Login_vpn.this, cookie);
+            HttpConnectionAndCode login_res = login(Login_vpn.this, sid, sys_pwd, ck, cookie, cookie_builder);
 
             if(login_res.code != 0){
 
                 //-6
                 if (login_res.comment != null && login_res.comment.contains("验证码")) {
                     do {
+                        HttpConnectionAndCode res = WAN.checkcode(Login_vpn.this, cookie);
                         if (res.obj != null) {
                             ck = OCR.getTextFromBitmap(Login_vpn.this, (Bitmap) res.obj, MyApp.ocr_lang_code);
                             cookie_builder.append(res.cookie);
                         }
-                        login_res = login(Login_vpn.this, sid, pwd, ck, cookie, cookie_builder);
+                        login_res = login(Login_vpn.this, sid, sys_pwd, ck, cookie, cookie_builder);
                     }while ( login_res.comment != null && login_res.comment.contains("验证码") );
                 }
 
+                //test bug
+                //login_res.code = -5;
 
-                    //如果res.code=0，他会直接走到else吗?
 
-                    //密码错误
                 if(login_res.comment != null && login_res.comment.contains("密码")) {
-                    tip = getResources().getString(R.string.login_fail_pwd_text);
+                    tip = getResources().getString(R.string.login_fail_pwd_title);
 
                 }else if(login_res.comment != null && login_res.comment.contains("网络")){
                     tip = getResources().getString(R.string.snackbar_login_fail_vpn);
+
+                }else if(login_res.comment != null && login_res.comment.contains("成功")){
+                    tip = "学分系统验证成功";
                 }
+
 
                 runOnUiThread((Runnable)()->{
                     Snackbar.make(view,tip,BaseTransientBottomBar.LENGTH_SHORT).show();
-                    if( tip.equals(getResources().getString(R.string.login_fail_pwd_text)) ){
-                        ((EditText)findViewById(R.id.passwd_input)).setText("");
-                        ((EditText)findViewById(R.id.aaw_passwd_input)).setText("");
-                        setFocusToEditText((EditText)findViewById(R.id.passwd_input));
+
+                    //
+                    if( tip.equals(getResources().getString(R.string.login_fail_pwd_title)) ){
+                        ((EditText)findViewById(R.id.sys_pwd_input)).setText("");
+                        setFocusToEditText((EditText)findViewById(R.id.sys_pwd_input));
                         unlock(true);
                         return;
                     }else if(tip.equals(getResources().getString(R.string.snackbar_login_fail_vpn))){
@@ -668,15 +664,37 @@ public class Login_vpn extends AppCompatActivity {
 
             }
 
+            HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd);
+
+            if (outside_login_res.code != 0){
+                runOnUiThread((Runnable) () -> {
+
+                    Snackbar.make(view, getResources().getString(R.string.lan_snackbar_outside_test_login_fail), BaseTransientBottomBar.LENGTH_SHORT).show();
+                    ((EditText)findViewById(R.id.aaw_pwd_input)).setText("");
+                    setFocusToEditText((EditText)findViewById(R.id.aaw_pwd_input));
+                    unlock(true);
+
+                });
+
+                return;
+            }
+
+
 
             if( login_res.code == 0 ) {
                 /** get shared preference and its editor */
                 final SharedPreferences shared_pref = MyApp.getCurrentSharedPreference();
                 final SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
 
+                if (!Login_vpn.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
+
+                    runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
                 //
                 /** insert/replace new user into database */
-                udao.insert(new User(sid, pwd, aaw_pwd, vpn_pwd));
+                udao.insert(new User(sid, aaw_pwd, sys_pwd, vpn_pwd));
 
 
                 /** deactivate all user in database */
