@@ -145,18 +145,26 @@ public class Login_vpn extends AppCompatActivity {
 
 
     //clear
-    private void lock(){
+    private void lock1(){
         ((Button)findViewById(R.id.button)).setEnabled(false);
         ((Button)findViewById(R.id.button2)).setEnabled(false);
+        ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.VISIBLE);
+    }
 
+    private void lock2(){
+        ((Button)findViewById(R.id.button)).setEnabled(false);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.VISIBLE);
     }
 
     //clear
-    private void unlock(boolean clickable){
+    private void unlock1(boolean clickable){
         ((Button)findViewById(R.id.button)).setEnabled(clickable);
         ((Button)findViewById(R.id.button2)).setEnabled(clickable);
+        ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
+    }
 
+    private void unlock2(boolean clickable){
+        ((Button)findViewById(R.id.button)).setEnabled(clickable);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
     }
 
@@ -240,7 +248,7 @@ public class Login_vpn extends AppCompatActivity {
     }
 
     //教务处登录
-    public static HttpConnectionAndCode outside_login_test(Context c, final String sid, final String pwd){
+    public static HttpConnectionAndCode outside_login_test(Context c, final String sid, final String pwd, String cookie){
         final String NAME = "outside_login_test()";
         Resources r = c.getResources();
         String body = "username=" + sid + "&passwd=" + pwd + "&login=%B5%C7%A1%A1%C2%BC";
@@ -251,7 +259,7 @@ public class Login_vpn extends AppCompatActivity {
                 r.getString(R.string.user_agent),
                 "https://v.guet.edu.cn/http/77726476706e69737468656265737421e5e3529f69377d556a468ca88d1b203b/",
                 body,
-                null,
+                cookie,
                 null,
                 r.getString(R.string.cookie_delimiter),
                 null,
@@ -556,7 +564,7 @@ public class Login_vpn extends AppCompatActivity {
     public void login_thread_1(View view) {
         //after click button login , it will go to login_thread
 
-        lock();
+        lock1();
         clearIMAndFocus();
 
         sid = ((TextView) findViewById(R.id.sid_input)).getText().toString();
@@ -592,7 +600,7 @@ public class Login_vpn extends AppCompatActivity {
                     } else {
                         system_login(sid);
                     }
-                    unlock(true);
+                    unlock1(true);
                 });
             }
         }).start();
@@ -601,7 +609,7 @@ public class Login_vpn extends AppCompatActivity {
 
 
     public void login_thread_2(View view){
-        lock();
+        lock2();
         clearIMAndFocus();
 
         aaw_pwd = ((TextView) findViewById(R.id.aaw_pwd_input)).getText().toString();
@@ -609,6 +617,7 @@ public class Login_vpn extends AppCompatActivity {
 
         if(aaw_pwd.isEmpty() || sys_pwd.isEmpty()){
             Toast.makeText(Login_vpn.this, "密码输入不能为空", Toast.LENGTH_SHORT).show();
+            unlock2(true);
             return;
         }
 
@@ -652,7 +661,7 @@ public class Login_vpn extends AppCompatActivity {
                     if( tip.equals(getResources().getString(R.string.login_fail_pwd_title)) ){
                         ((EditText)findViewById(R.id.sys_pwd_input)).setText("");
                         setFocusToEditText((EditText)findViewById(R.id.sys_pwd_input));
-                        unlock(true);
+                        unlock2(true);
                         return;
                     }else if(tip.equals(getResources().getString(R.string.snackbar_login_fail_vpn))){
                         //请检查网络连接
@@ -662,7 +671,7 @@ public class Login_vpn extends AppCompatActivity {
 
             }
 
-            HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd);
+            HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd, cookie);
 
             if (outside_login_res.code != 0){
                 runOnUiThread((Runnable) () -> {
@@ -670,7 +679,7 @@ public class Login_vpn extends AppCompatActivity {
                     Snackbar.make(view, getResources().getString(R.string.lan_snackbar_outside_test_login_fail), BaseTransientBottomBar.LENGTH_SHORT).show();
                     ((EditText)findViewById(R.id.aaw_pwd_input)).setText("");
                     setFocusToEditText((EditText)findViewById(R.id.aaw_pwd_input));
-                    unlock(true);
+                    unlock2(true);
 
                 });
 
@@ -740,7 +749,7 @@ public class Login_vpn extends AppCompatActivity {
                     MyApp.setRunning_login_thread(false);
 
                     runOnUiThread(() -> {
-                        unlock(false);
+                        unlock2(false);
                         Toast.makeText(Login_vpn.this, getResources().getString(R.string.lan_toast_update_success), Toast.LENGTH_SHORT).show();
                         getSupportActionBar().setTitle(getResources().getString(R.string.lan_title_login_updated));
                         startActivity(new Intent(Login_vpn.this, MainActivity.class));
@@ -760,8 +769,8 @@ public class Login_vpn extends AppCompatActivity {
                         });
                     } else {
                         runOnUiThread(() -> {
-                            /** call {@link #unlock(boolean)} with true */
-                            unlock(true);
+                            /** call {@link #unlock1(boolean)} with true */
+                            unlock2(true);
                             /** show tip snack-bar, change title */
                             Snackbar.make(view, getResources().getString(R.string.lan_toast_update_fail), BaseTransientBottomBar.LENGTH_LONG).show();
                             getSupportActionBar().setTitle(getResources().getString(R.string.lan_title_login_updated_fail));

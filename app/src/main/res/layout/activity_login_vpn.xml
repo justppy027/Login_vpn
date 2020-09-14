@@ -80,8 +80,8 @@
         android:id="@+id/button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
+        android:layout_marginEnd="144dp"
         android:background="@drawable/login_btn_border"
         android:onClick="login_thread_2"
         android:text="@string/login_btn"
@@ -90,9 +90,8 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline4"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/button2"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+        app:layout_constraintTop_toTopOf="@+id/guideline3"
+        app:layout_constraintVertical_bias="0.125" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -158,6 +157,7 @@
         android:id="@+id/sid_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:imeOptions="actionDone"
         android:background="@drawable/login_text_border"
         android:completionThreshold="0"
         android:gravity="center"
@@ -186,6 +186,7 @@
         android:background="@drawable/login_text_border"
         android:gravity="center"
         android:inputType="textPassword"
+        android:imeOptions="actionDone"
         android:textAlignment="center"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/sys_pwd_input"
@@ -199,30 +200,14 @@
         android:layout_height="wrap_content"
         android:background="@drawable/login_text_border"
         android:gravity="center"
-        android:inputType="number"
+        android:imeOptions="actionDone"
+        android:inputType="textPassword"
         android:textAlignment="center"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
         app:layout_constraintStart_toEndOf="@id/barrier2"
         app:layout_constraintTop_toBottomOf="@+id/aaw_pwd_input" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/forget_btn_border"
-        android:onClick="deleteUser"
-        android:text="@string/forget_btn"
-        android:textColor="@color/colorForgetButtonText"
-        app:layout_constrainedHeight="true"
-        app:layout_constraintBottom_toTopOf="@id/guideline4"
-        app:layout_constraintEnd_toStartOf="@+id/button"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@id/guideline6"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
     <ProgressBar
         android:id="@+id/progressBar"
