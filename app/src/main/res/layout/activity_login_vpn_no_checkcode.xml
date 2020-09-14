@@ -52,7 +52,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/login_btn_border"
-        android:onClick="login_thread"
+        android:onClick="login_thread_1"
         android:text="@string/login_btn"
         android:textColor="@color/colorLoginButtonText"
         android:textSize="14sp"
