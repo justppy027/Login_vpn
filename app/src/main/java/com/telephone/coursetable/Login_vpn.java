@@ -609,6 +609,7 @@ public class Login_vpn extends AppCompatActivity {
 
         if(aaw_pwd.isEmpty() || sys_pwd.isEmpty()){
             Toast.makeText(Login_vpn.this, "密码输入不能为空", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         new Thread(()->{
