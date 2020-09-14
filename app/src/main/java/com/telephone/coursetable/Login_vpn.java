@@ -643,7 +643,6 @@ public class Login_vpn extends AppCompatActivity {
                 //test bug
                 //login_res.code = -5;
 
-
                 if ( login_res.comment != null && login_res.comment.contains("密码") ) {
                     tip = getResources().getString(R.string.lan_snackbar_vpn_pwd_login_fail);
                 }else if ( login_res.comment != null && login_res.comment.contains("成功") ){
