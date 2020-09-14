@@ -674,6 +674,7 @@ public class Login_vpn extends AppCompatActivity {
             HttpConnectionAndCode outside_login_res = outside_login_test(Login_vpn.this, sid, aaw_pwd, cookie);
 
             if (outside_login_res.code != 0){
+                //-6
                 runOnUiThread((Runnable) () -> {
 
                     Snackbar.make(view, getResources().getString(R.string.lan_snackbar_outside_test_login_fail), BaseTransientBottomBar.LENGTH_SHORT).show();
