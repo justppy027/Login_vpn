@@ -110,8 +110,8 @@ public class Login_vpn extends AppCompatActivity {
                     ((TextView) findViewById(R.id.sid_input)).setText(sid);
                     ((TextView) findViewById(R.id.sid_input)).setEnabled(false);
 
-                    ((TextView) findViewById(R.id.passwd_input)).setText("080291");
                     ((TextView) findViewById(R.id.aaw_pwd_input)).setText("080291");
+                    ((TextView) findViewById(R.id.sys_pwd_input)).setText("080291");
 
                     ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
 
@@ -170,12 +170,6 @@ public class Login_vpn extends AppCompatActivity {
         }
     }
 
-
-    private void setFocusToEditText_Force(EditText et) {
-        if (et != null) {
-            et.requestFocus();
-        }
-    }
 
     //clear
     private void clearIMAndFocus() {
@@ -610,9 +604,12 @@ public class Login_vpn extends AppCompatActivity {
         lock();
         clearIMAndFocus();
 
-        aaw_pwd = ((TextView) findViewById(R.id.passwd_input)).getText().toString();
-        sys_pwd = ((TextView) findViewById(R.id.aaw_pwd_input)).getText().toString();
+        aaw_pwd = ((TextView) findViewById(R.id.aaw_pwd_input)).getText().toString();
+        sys_pwd = ((TextView) findViewById(R.id.sys_pwd_input)).getText().toString();
 
+        if(aaw_pwd.isEmpty() || sys_pwd.isEmpty()){
+            Toast.makeText(Login_vpn.this, "密码输入不能为空", Toast.LENGTH_SHORT).show();
+        }
 
         new Thread(()->{
 
