@@ -354,7 +354,9 @@ public class FetchService extends IntentService {
         SharedPreferences pref_test = MyApp.getCurrentSharedPreference_Test();
         GradesDao grdao_test = MyApp.getCurrentAppDB_Test().gradesDao();
         ExamInfoDao edao_test = MyApp.getCurrentAppDB_Test().examInfoDao();
+        CETDao cetDao_test = MyApp.getCurrentAppDB_Test().cetDao();
         SharedPreferences.Editor editor_test = MyApp.getCurrentSharedPreferenceEditor_Test();
+
         PersonInfoDao pdao = MyApp.getCurrentAppDB().personInfoDao();
         TermInfoDao tdao = MyApp.getCurrentAppDB().termInfoDao();
         GoToClassDao gdao = MyApp.getCurrentAppDB().goToClassDao();
@@ -363,9 +365,10 @@ public class FetchService extends IntentService {
         SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
         GradesDao grdao = MyApp.getCurrentAppDB().gradesDao();
         ExamInfoDao edao = MyApp.getCurrentAppDB().examInfoDao();
+        CETDao cetDao = MyApp.getCurrentAppDB().cetDao();
         UserDao udao = MyApp.getCurrentAppDB().userDao();
         Login.deleteOldDataFromDatabase(
-                gdao_test, cdao_test, tdao_test, pdao_test, gsdao_test, grdao_test, edao_test
+                gdao_test, cdao_test, tdao_test, pdao_test, gsdao_test, grdao_test, edao_test, cetDao_test
         );
         editor_test.clear().commit();
         boolean fetch_merge_res = Login_vpn.fetch_merge(
@@ -378,6 +381,7 @@ public class FetchService extends IntentService {
                 gsdao_test,
                 grdao_test,
                 edao_test,
+                cetDao_test,
                 editor_test
         );
         if (!fetch_merge_res){
