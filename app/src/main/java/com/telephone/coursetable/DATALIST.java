@@ -3,6 +3,7 @@ package com.telephone.coursetable;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.telephone.coursetable.Database.CETDao;
 import com.telephone.coursetable.Database.ClassInfoDao;
 import com.telephone.coursetable.Database.ExamInfoDao;
 import com.telephone.coursetable.Database.GoToClassDao;
@@ -31,7 +32,7 @@ public class DATALIST {
      * @gson
      *      - {@link com.telephone.coursetable.Gson.GoToClass_ClassInfo}
      * @fetch
-     *      - {@link com.telephone.coursetable.Fetch.LAN#goToClass_ClassInfo(Context, String, String)}
+     *      - {@link com.telephone.coursetable.Fetch.LAN#goToClass_ClassInfo(Context, String)}
      * @database
      *      {@link com.telephone.coursetable.Database.GoToClass} + {@link com.telephone.coursetable.Database.ClassInfo}
      * @merge
@@ -105,9 +106,23 @@ public class DATALIST {
      * @clear
      */
     public final String ExamInfo = null;
+
+    /**
+     * @gson
+     *      - {@link com.telephone.coursetable.Gson.CET}
+     * @fetch
+     *      - {@link com.telephone.coursetable.Fetch.LAN#cet(Context, String)}
+     * @database
+     *      {@link com.telephone.coursetable.Database.CET}
+     * @merge
+     *      {@link com.telephone.coursetable.Merge.Merge#cet(String, CETDao)}
+     * @clear
+     */
+    public final String CET = null;
 }
 /**
- * - {@link com.telephone.coursetable.Login#fetch_merge(android.content.Context, java.lang.String, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, android.content.SharedPreferences.Editor, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.ExamInfoDao)}
- * - {@link com.telephone.coursetable.Login#deleteOldDataFromDatabase(com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.ExamInfoDao)}
- * - {@link com.telephone.coursetable.FetchService#lan_merge(com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, com.telephone.coursetable.Database.GraduationScoreDao, android.content.SharedPreferences.Editor, android.content.SharedPreferences, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.GradesDao, java.util.List, com.telephone.coursetable.Database.ExamInfoDao, com.telephone.coursetable.Database.ExamInfoDao)}
+ * 先更改方法再改错，声明记得初始化
+ * - {@link com.telephone.coursetable.Login#fetch_merge(android.content.Context, java.lang.String, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, android.content.SharedPreferences.Editor, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.ExamInfoDao, com.telephone.coursetable.Database.CETDao)}
+ * - {@link com.telephone.coursetable.Login#deleteOldDataFromDatabase(com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.ExamInfoDao, com.telephone.coursetable.Database.CETDao)}
+ * - {@link com.telephone.coursetable.FetchService#lan_merge(com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.PersonInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.TermInfoDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.GoToClassDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.ClassInfoDao, com.telephone.coursetable.Database.GraduationScoreDao, com.telephone.coursetable.Database.GraduationScoreDao, android.content.SharedPreferences.Editor, android.content.SharedPreferences, com.telephone.coursetable.Database.GradesDao, com.telephone.coursetable.Database.GradesDao, java.util.List, com.telephone.coursetable.Database.ExamInfoDao, com.telephone.coursetable.Database.ExamInfoDao, com.telephone.coursetable.Database.CETDao, com.telephone.coursetable.Database.CETDao)}
  */

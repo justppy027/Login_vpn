@@ -2,12 +2,14 @@ package com.telephone.coursetable.Gson;
 
 import java.util.List;
 
-//已选课程
-public class CourseSelectedS {
-
+/**
+ * 毕业学位评估
+ * @clear
+ */
+public class GraduationDegreeEvaluation_s {
     private boolean success;
     private long total;
-    private List<CourseSelected_Data> data;
+    private List<GraduationDegreeEvaluation> data;
 
     public boolean isSuccess() {
         return success;
@@ -17,7 +19,7 @@ public class CourseSelectedS {
         return total;
     }
 
-    public List<CourseSelected_Data> getData() {
+    public List<GraduationDegreeEvaluation> getData() {
         return data;
     }
 }

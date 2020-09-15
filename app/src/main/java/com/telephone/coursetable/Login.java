@@ -27,6 +27,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.telephone.coursetable.Clock.Clock;
 import com.telephone.coursetable.Database.AppDatabase;
+import com.telephone.coursetable.Database.CETDao;
 import com.telephone.coursetable.Database.ClassInfoDao;
 import com.telephone.coursetable.Database.ExamInfoDao;
 import com.telephone.coursetable.Database.GoToClassDao;
@@ -61,6 +62,7 @@ public class Login extends AppCompatActivity {
     private GraduationScoreDao gsdao = null;
     private GradesDao grdao = null;
     private ExamInfoDao edao = null;
+    private CETDao cetDao = null;
 
     /**
      * @ui
@@ -259,7 +261,7 @@ public class Login extends AppCompatActivity {
      * 1. delete all user-related data from database(not including user login information)
      * @clear
      */
-    public static void deleteOldDataFromDatabase(GoToClassDao gdao, ClassInfoDao cdao, TermInfoDao tdao, PersonInfoDao pdao, GraduationScoreDao gsdao, GradesDao grdao, ExamInfoDao edao){
+    public static void deleteOldDataFromDatabase(GoToClassDao gdao, ClassInfoDao cdao, TermInfoDao tdao, PersonInfoDao pdao, GraduationScoreDao gsdao, GradesDao grdao, ExamInfoDao edao, CETDao cetDao){
         gdao.deleteAll();
         cdao.deleteAll();
         tdao.deleteAll();
@@ -267,6 +269,7 @@ public class Login extends AppCompatActivity {
         gsdao.deleteAll();
         grdao.deleteAll();
         edao.deleteAll();
+        cetDao.deleteAll();
     }
 
     /**
@@ -422,6 +425,7 @@ public class Login extends AppCompatActivity {
         gsdao = db.graduationScoreDao();
         grdao = db.gradesDao();
         edao = db.examInfoDao();
+        cetDao = db.cetDao();
         initContentView();
     }
 
@@ -492,7 +496,7 @@ public class Login extends AppCompatActivity {
      * - false : something went wrong
      * @clear
      */
-    public static boolean fetch_merge(Context c, String cookie, PersonInfoDao pdao, TermInfoDao tdao, GoToClassDao gdao, ClassInfoDao cdao, GraduationScoreDao gsdao, SharedPreferences.Editor editor, GradesDao grdao, ExamInfoDao edao){
+    public static boolean fetch_merge(Context c, String cookie, PersonInfoDao pdao, TermInfoDao tdao, GoToClassDao gdao, ClassInfoDao cdao, GraduationScoreDao gsdao, SharedPreferences.Editor editor, GradesDao grdao, ExamInfoDao edao, CETDao cetDao){
         final String NAME = "fetch_merge()";
         HttpConnectionAndCode res;
         res = LAN.personInfo(c, cookie);
@@ -516,14 +520,12 @@ public class Login extends AppCompatActivity {
             if (terms.contains(term.term))continue;
             tdao.deleteTerm(term.term);
         }
-        for (String term : terms){
-            res = LAN.goToClass_ClassInfo(c, cookie, term);
-            if (res.code != 0){
-                Log.e(NAME, "fail");
-                return false;
-            }
-            Merge.goToClass_ClassInfo(res.comment, gdao, cdao);
+        res = LAN.goToClass_ClassInfo(c, cookie);
+        if (res.code != 0){
+            Log.e(NAME, "fail");
+            return false;
         }
+        Merge.goToClass_ClassInfo(res.comment, gdao, cdao);
         res = LAN.graduationScore(c, cookie);
         res_add = LAN.graduationScore2(c, cookie);
         if (res.code != 0 || res_add.code != 0){
@@ -549,6 +551,12 @@ public class Login extends AppCompatActivity {
             return false;
         }
         Merge.examInfo(res.comment, edao);
+        res = LAN.cet(c, cookie);
+        if (res.code != 0){
+            Log.e(NAME, "fail");
+            return false;
+        }
+        Merge.cet(res.comment, cetDao);
         Log.e(NAME, "success");
         return true;
     }
@@ -586,7 +594,7 @@ public class Login extends AppCompatActivity {
      *                      3. end this thread
      *              4. get cookie after successfully logging in the credit system
      *              5. get shared preference and its editor
-     *              6. detect new activity
+     *              6. detect new activity || skip no activity
      *              7. insert/replace new user into database
      *              ******************************* UPDATE DATA START *******************************
      *              8. deactivate all user in database
@@ -594,10 +602,10 @@ public class Login extends AppCompatActivity {
      *              10. clear shared preference
      *              11. commit shared preference
      *              12. show tip snack-bar, change title
-     *              13. call {@link #deleteOldDataFromDatabase(GoToClassDao, ClassInfoDao, TermInfoDao, PersonInfoDao, GraduationScoreDao, GradesDao, ExamInfoDao)}
-     *              14. call {@link #fetch_merge(Context, String, PersonInfoDao, TermInfoDao, GoToClassDao, ClassInfoDao, GraduationScoreDao, SharedPreferences.Editor, GradesDao, ExamInfoDao)}
+     *              13. call {@link #deleteOldDataFromDatabase(GoToClassDao, ClassInfoDao, TermInfoDao, PersonInfoDao, GraduationScoreDao, GradesDao, ExamInfoDao, CETDao)}
+     *              14. call {@link #fetch_merge(Context, String, PersonInfoDao, TermInfoDao, GoToClassDao, ClassInfoDao, GraduationScoreDao, SharedPreferences.Editor, GradesDao, ExamInfoDao, CETDao)}
      *              15. commit shared preference
-     *              16. the result of {@link #fetch_merge(Context, String, PersonInfoDao, TermInfoDao, GoToClassDao, ClassInfoDao, GraduationScoreDao, SharedPreferences.Editor, GradesDao, ExamInfoDao)}:
+     *              16. the result of {@link #fetch_merge(Context, String, PersonInfoDao, TermInfoDao, GoToClassDao, ClassInfoDao, GraduationScoreDao, SharedPreferences.Editor, GradesDao, ExamInfoDao, CETDao)}:
      *                  - if everything is ok:
      *                      1. locate now, print the locate-result to log
      *                      2. activate the user
@@ -605,16 +613,17 @@ public class Login extends AppCompatActivity {
      *                      4. set {@link MyApp#setRunning_login_thread(boolean)} to false
      *                      5. call {@link #unlock(boolean)} with false
      *                      6. show tip toast, change title
-     *                      7. start a new {@link MainActivity}
+     *                      7. if some activity is running:
+     *                          1. start a new {@link MainActivity}
      *                  - if something went wrong:
      *                      1. set {@link MyApp#setRunning_login_thread(boolean)} to false
-     *                      2. {@link MainActivity}:
-     *                          - if running:
-     *                              1. show tip toast
-     *                              2. call {@link MainActivity#refresh()}
-     *                          - if not running:
+     *                      2. if login activity is current running activity:
      *                              1. call {@link #unlock(boolean)} with true
      *                              2. show tip snack-bar, change title
+     *                         else:
+     *                              1. show tip toast
+     *                              2. if main activity is current running activity:
+     *                                  1. call {@link MainActivity#refresh()}
      *              ******************************* UPDATE DATA END *******************************
      *      - Press-no : nothing will happen
      * 6. start a new thread:
@@ -711,7 +720,12 @@ public class Login extends AppCompatActivity {
                         /** get shared preference and its editor */
                         final SharedPreferences shared_pref = MyApp.getCurrentSharedPreference();
                         final SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
-                        /** detect new activity */
+                        /** detect new activity || skip no activity */
+                        if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.NULL)){
+                            Log.e(NAME, "no activity is running, login = " + Login.this.toString() + " canceled");
+                            runOnUiThread(()->Toast.makeText(Login.this, "登录取消", Toast.LENGTH_SHORT).show());
+                            return;
+                        }
                         Log.e(NAME, "login activity pointer = " + Login.this.toString());
                         Log.e(NAME, "running activity pointer = " + MyApp.getRunning_activity_pointer().toString());
                         if (!Login.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
@@ -738,9 +752,9 @@ public class Login extends AppCompatActivity {
                             getSupportActionBar().setTitle(getResources().getString(R.string.lan_title_login_updating));
                         });
                         /** call {@link #deleteOldDataFromDatabase()} */
-                        deleteOldDataFromDatabase(gdao, cdao, tdao, pdao, gsdao, grdao, edao);
+                        deleteOldDataFromDatabase(gdao, cdao, tdao, pdao, gsdao, grdao, edao, cetDao);
                         /** call {@link #fetch_merge(Context, String, PersonInfoDao, TermInfoDao, GoToClassDao, ClassInfoDao, GraduationScoreDao, SharedPreferences.Editor)} */
-                        boolean fetch_merge_res = fetch_merge(Login.this, cookie_after_login, pdao, tdao, gdao, cdao, gsdao, editor, grdao, edao);
+                        boolean fetch_merge_res = fetch_merge(Login.this, cookie_after_login, pdao, tdao, gdao, cdao, gsdao, editor, grdao, edao, cetDao);
                         /** commit shared preference */
                         editor.commit();
                         if (fetch_merge_res){
@@ -767,27 +781,37 @@ public class Login extends AppCompatActivity {
                                 /** show tip toast, change title */
                                 Toast.makeText(Login.this, getResources().getString(R.string.lan_toast_update_success), Toast.LENGTH_SHORT).show();
                                 getSupportActionBar().setTitle(getResources().getString(R.string.lan_title_login_updated));
-                                /** start a new {@link MainActivity} */
-                                startActivity(new Intent(Login.this, MainActivity.class));
+                                /** if some activity is running */
+                                if (!MyApp.getRunning_activity().equals(MyApp.RunningActivity.NULL)){
+                                    Log.e(NAME, "start a new Main Activity...");
+                                    /** start a new {@link MainActivity} */
+                                    startActivity(new Intent(Login.this, MainActivity.class));
+                                }else {
+                                    Log.e(NAME, "update success but no activity is running, NOT start new Main Activity");
+                                }
                             });
                         }else {
                             /** set {@link MyApp#running_login_thread} to false */
                             MyApp.setRunning_login_thread(false);
-                            /** {@link MyApp#running_main} */
-                            if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.MAIN) && MyApp.getRunning_main() != null){
-                                runOnUiThread(() -> {
-                                    /** show tip toast */
-                                    Toast.makeText(Login.this, getResources().getString(R.string.lan_toast_update_fail), Toast.LENGTH_SHORT).show();
-                                    /** call {@link MainActivity#refresh()} */
-                                    MyApp.getRunning_main().refresh();
-                                });
-                            }else {
+                            /** if login activity is current running activity */
+                            if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.LOGIN)){
                                 runOnUiThread(() -> {
                                     /** call {@link #unlock(boolean)} with true */
                                     unlock(true);
                                     /** show tip snack-bar, change title */
                                     Snackbar.make(view, getResources().getString(R.string.lan_toast_update_fail), BaseTransientBottomBar.LENGTH_LONG).show();
                                     getSupportActionBar().setTitle(getResources().getString(R.string.lan_title_login_updated_fail));
+                                });
+                            }else {
+                                runOnUiThread(() -> {
+                                    /** show tip toast */
+                                    Toast.makeText(Login.this, getResources().getString(R.string.lan_toast_update_fail), Toast.LENGTH_SHORT).show();
+                                    /** if main activity is current running activity */
+                                    if (MyApp.getRunning_main() != null){
+                                        Log.e(NAME, "refresh the Main Activity...");
+                                        /** call {@link MainActivity#refresh()} */
+                                        MyApp.getRunning_main().refresh();
+                                    }
                                 });
                             }
                         }
