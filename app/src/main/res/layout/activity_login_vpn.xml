@@ -61,27 +61,10 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5" />
 
-<!--    <ImageView-->
-<!--        android:id="@+id/imageView_checkcode"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:onClick="changeCode"-->
-<!--        android:scaleType="fitCenter"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline3"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/guideline7"-->
-<!--        app:layout_constraintHorizontal_bias="0.0"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guideline8"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/guideline"-->
-<!--        app:layout_constraintVertical_bias="1.0"-->
-<!--        app:layout_constraintWidth_default="spread"-->
-<!--        app:srcCompat="@drawable/network_vpn" />-->
-
     <Button
         android:id="@+id/button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="144dp"
         android:background="@drawable/login_btn_border"
         android:onClick="login_thread_2"
         android:text="@string/login_btn"
@@ -90,8 +73,8 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/guideline4"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
-        app:layout_constraintTop_toTopOf="@+id/guideline3"
-        app:layout_constraintVertical_bias="0.125" />
+        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
     <ImageView
         android:id="@+id/imageView4"
