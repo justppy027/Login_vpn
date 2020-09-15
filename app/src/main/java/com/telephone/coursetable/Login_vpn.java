@@ -30,6 +30,7 @@ import com.telephone.coursetable.Clock.Clock;
 import com.telephone.coursetable.Clock.Locate;
 import com.telephone.coursetable.Clock.TimeAndDescription;
 import com.telephone.coursetable.Database.AppDatabase;
+import com.telephone.coursetable.Database.CETDao;
 import com.telephone.coursetable.Database.ClassInfoDao;
 import com.telephone.coursetable.Database.ExamInfoDao;
 import com.telephone.coursetable.Database.GoToClassDao;
@@ -70,6 +71,7 @@ public class Login_vpn extends AppCompatActivity {
     private GraduationScoreDao gsdao = null;
     private GradesDao grdao = null;
     private ExamInfoDao edao = null;
+    private CETDao cetDao = null;
     private SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
 
     private String sid = null;
@@ -482,7 +484,7 @@ public class Login_vpn extends AppCompatActivity {
      */
     public static boolean fetch_merge(Context c, String cookie, PersonInfoDao pdao, TermInfoDao tdao,
                                       GoToClassDao gdao, ClassInfoDao cdao, GraduationScoreDao gsdao,
-                                      GradesDao grdao, ExamInfoDao edao ,SharedPreferences.Editor editor) {
+                                      GradesDao grdao, ExamInfoDao edao , CETDao cetDao, SharedPreferences.Editor editor) {
         final String NAME = "fetch_merge()";
         HttpConnectionAndCode res;
         HttpConnectionAndCode res_add;
@@ -543,6 +545,12 @@ public class Login_vpn extends AppCompatActivity {
         }
         Merge.examInfo(res.comment, edao);
 
+        res = WAN.cet(c, cookie);
+        if (res.code != 0){
+            Log.e(NAME, "fail");
+            return false;
+        }
+        Merge.cet(res.comment, cetDao);
 
         res = WAN.hour(c, cookie);
         if (res.code != 0) {
@@ -714,7 +722,7 @@ public class Login_vpn extends AppCompatActivity {
                 deleteOldDataFromDatabase(gdao, cdao, tdao, pdao, gsdao, grdao, edao);
 
 
-                boolean fetch_merge_res = fetch_merge(Login_vpn.this, cookie, pdao, tdao, gdao, cdao, gsdao, grdao, edao, editor);
+                boolean fetch_merge_res = fetch_merge(Login_vpn.this, cookie, pdao, tdao, gdao, cdao, gsdao, grdao, edao, cetDao, editor);
 
 
                 /** commit shared preference */
