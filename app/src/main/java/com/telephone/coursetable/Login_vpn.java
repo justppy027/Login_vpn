@@ -86,8 +86,6 @@ public class Login_vpn extends AppCompatActivity {
     private void first_login() {
         setContentView(R.layout.activity_login_vpn_no_checkcode);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
-        ((TextView)findViewById(R.id.sid_input)).setText("1800301127");
-        ((TextView)findViewById(R.id.passwd_input)).setText("080291");
 
    }
 
@@ -111,9 +109,6 @@ public class Login_vpn extends AppCompatActivity {
                     setContentView(R.layout.activity_login_vpn);
                     ((TextView) findViewById(R.id.sid_input)).setText(sid);
                     ((TextView) findViewById(R.id.sid_input)).setEnabled(false);
-
-                    ((TextView) findViewById(R.id.aaw_pwd_input)).setText("080291");
-                    ((TextView) findViewById(R.id.sys_pwd_input)).setText("080291");
 
                     ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
 
