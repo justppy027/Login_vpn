@@ -17,6 +17,7 @@ import java.util.List;
 
 public class GradePoint_Test {
 
+    //教务处登录后
     //得到一段html文本
     public static String grade_point_html( Context c, String cookie){
 
@@ -46,21 +47,29 @@ public class GradePoint_Test {
     }
 
 
+    //学分系统登录后
+
+
     //处理得到的html文本
     public static List<String> grade_point_array(Context c, String cookie){
 
         List<String> gp_arr = new ArrayList<>();
-        String html = GradePoint_Test.grade_point_html(c, cookie);
+        String html;
         Elements element1;
         Elements element2;
         Document doc;
+        int time = 0;
 
         do {
+            html = GradePoint_Test.grade_point_html(c, cookie);
             doc = Jsoup.parse( html );
             element1 = doc.select("html > body > table > tbody > tr > td > table > tbody > tr > th");
             element2 = doc.select("html > body > table > tbody > tr > td > table > tbody > tr > td > B > font ");
-        }while( element1.isEmpty() || element2.isEmpty() );
+        }while( (element1.isEmpty() || element2.isEmpty()) && (++time)<10 );
 
+        if (element1.isEmpty() || element2.isEmpty()) {
+            return null;
+        }
         gp_arr.add(element1.get(3).ownText());
         gp_arr.add(element2.get(0).ownText());
         gp_arr.add(element1.get(4).ownText());
