@@ -106,6 +106,8 @@ public class Login_vpn extends AppCompatActivity {
 
                 runOnUiThread(() -> {
 
+                    ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
+
                     setContentView(R.layout.activity_login_vpn);
                     ((TextView) findViewById(R.id.sid_input)).setText(sid);
                     ((TextView) findViewById(R.id.sid_input)).setEnabled(false);
@@ -160,7 +162,6 @@ public class Login_vpn extends AppCompatActivity {
     private void unlock1(boolean clickable){
         ((Button)findViewById(R.id.button)).setEnabled(clickable);
         ((Button)findViewById(R.id.button2)).setEnabled(clickable);
-        ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
     }
 
     private void unlock2(boolean clickable){
@@ -593,7 +594,7 @@ public class Login_vpn extends AppCompatActivity {
 
 
                 runOnUiThread(() -> {
-                    Toast.makeText(Login_vpn.this, tip, Toast.LENGTH_SHORT).show();
+                    Snackbar.make(view, tip, BaseTransientBottomBar.LENGTH_LONG).show();
                     if (tip.equals("请检查用户名、密码和网络是否正确。")) {
                         ((EditText) findViewById(R.id.passwd_input)).setText("");
                         setFocusToEditText((EditText) findViewById(R.id.passwd_input));
@@ -601,6 +602,7 @@ public class Login_vpn extends AppCompatActivity {
                         system_login(sid);
                     }
                     unlock1(true);
+                    Log.e("d", "fe");
                 });
             }
         }).start();
