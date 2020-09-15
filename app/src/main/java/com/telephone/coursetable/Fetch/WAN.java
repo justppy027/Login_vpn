@@ -218,4 +218,9 @@ public class WAN {
     }
 
 
+    public static HttpConnectionAndCode cet(Context c, String cookie){
+        return null;
+    }
+
+
 }
