@@ -132,7 +132,6 @@ public class Login_vpn extends AppCompatActivity {
                     if (!userSelected.isEmpty()) {
                         runOnUiThread(() -> {
                             ((AutoCompleteTextView) findViewById(R.id.passwd_input)).setText(userSelected.get(0).password);
-                            setFocusToEditText((EditText) findViewById(R.id.checkcode_input));
 
                         });
                     }
@@ -203,7 +202,7 @@ public class Login_vpn extends AppCompatActivity {
 
 
     //clear
-    public static void deleteOldDataFromDatabase(GoToClassDao gdao, ClassInfoDao cdao, TermInfoDao tdao, PersonInfoDao pdao, GraduationScoreDao gsdao, GradesDao grdao, ExamInfoDao edao) {
+    public static void deleteOldDataFromDatabase(GoToClassDao gdao, ClassInfoDao cdao, TermInfoDao tdao, PersonInfoDao pdao, GraduationScoreDao gsdao, GradesDao grdao, ExamInfoDao edao, CETDao cetDao) {
         gdao.deleteAll();
         cdao.deleteAll();
         tdao.deleteAll();
@@ -211,6 +210,7 @@ public class Login_vpn extends AppCompatActivity {
         gsdao.deleteAll();
         grdao.deleteAll();
         edao.deleteAll();
+        cetDao.deleteAll();
     }
 
     //clear
@@ -418,6 +418,7 @@ public class Login_vpn extends AppCompatActivity {
         gsdao = db.graduationScoreDao();
         grdao = db.gradesDao();
         edao = db.examInfoDao();
+        cetDao = db.cetDao();
 
         cookie_builder = new StringBuilder();
         first_login();
@@ -719,7 +720,7 @@ public class Login_vpn extends AppCompatActivity {
 
                 //
                 /** call {@link #deleteOldDataFromDatabase()} */
-                deleteOldDataFromDatabase(gdao, cdao, tdao, pdao, gsdao, grdao, edao);
+                deleteOldDataFromDatabase(gdao, cdao, tdao, pdao, gsdao, grdao, edao, cetDao);
 
 
                 boolean fetch_merge_res = fetch_merge(Login_vpn.this, cookie, pdao, tdao, gdao, cdao, gsdao, grdao, edao, cetDao, editor);

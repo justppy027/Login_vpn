@@ -405,7 +405,7 @@ public class FetchService extends IntentService {
         udao.disableAllUser();
         /** migrate the pulled data to the database */
         Log.e(NAME, "migrate the pulled data to the database...");
-        wan_merge(pdao, pdao_test, tdao, tdao_test, gdao, gdao_test, cdao, cdao_test, gsdao, gsdao_test, editor, pref_test, grdao, grdao_test, delay_week_to_apply, edao, edao_test);
+        wan_merge(pdao, pdao_test, tdao, tdao_test, gdao, gdao_test, cdao, cdao_test, gsdao, gsdao_test, editor, pref_test, grdao, grdao_test, delay_week_to_apply, edao, edao_test, cetDao, cetDao_test);
         /** re-insert user */
         Log.e(NAME, "re-insert user...");
         udao.insert(new User(user.username, user.password, user.aaw_password, user.vpn_password));
@@ -425,7 +425,7 @@ public class FetchService extends IntentService {
                            ClassInfoDao c, ClassInfoDao c_t, GraduationScoreDao gs, GraduationScoreDao gs_t,
                            SharedPreferences.Editor editor, SharedPreferences pref_t,
                            GradesDao gr, GradesDao gr_t, List<Integer> delay_week_to_apply,
-                           ExamInfoDao e, ExamInfoDao e_t){
+                           ExamInfoDao e, ExamInfoDao e_t, CETDao cet, CETDao cet_t){
 
         List<PersonInfo> p_t_all = p_t.selectAll();
         for (PersonInfo p_a : p_t_all){
@@ -463,6 +463,11 @@ public class FetchService extends IntentService {
         for (ExamInfo e_a : e_t_all){
             e.insert(e_a);
         }
+        List<CET> cet_t_all = cet_t.selectAll();
+        for (CET cet_a : cet_t_all){
+            cet.insert(cet_a);
+        }
+
 
     }
 
