@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.os.PowerManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -160,6 +161,55 @@ public class FetchService extends IntentService {
             }
         }
     }
+
+    /**
+     * 1.将数据定位到当前学期
+     *
+     * 2.登陆判断
+     *      2.1第一次登陆
+     *          p.数据库为空
+     *          o.测试数据库 内皆为新数据
+     *
+     *      2.2已登陆
+     *          p.数据库不为空，存放着 旧数据
+     *          pp.测试数据库 的新数据中 包含 成绩更新
+     *          ooo.推送 成绩更新 的消息
+     *
+     *          pp.测试数据库 的新数据中 不包含 成绩更新
+     *          ooo.啥也不做
+     *
+     * 3.将 测试数据库 的内容存入 数据库 ，完成数据的更新
+     *
+     * 4.将 数据库 的部分数据 与 当前时间 进行匹配
+     *      o.有符合的数据 推送提醒
+     *      o.没有符合的数据 啥也不做
+     *
+     *
+     * **/
+
+    private static void NoticePush(@NonNull Locate locate){
+
+        GoToClassDao gdao = null;
+        GradesDao grdao = null;
+
+        List<ShowTableNode> nodes = null;
+        if (locate.term != null){
+            nodes = gdao.getNode(locate.term.term, locate.week, locate.weekday, locate.time);
+
+
+        }else{
+            //
+        }
+
+
+
+
+    }
+
+
+
+
+
 
     private void updateListAppWidgets(){
         final String NAME = "updateListAppWidgets()";
@@ -367,10 +417,13 @@ public class FetchService extends IntentService {
         ExamInfoDao edao = MyApp.getCurrentAppDB().examInfoDao();
         CETDao cetDao = MyApp.getCurrentAppDB().cetDao();
         UserDao udao = MyApp.getCurrentAppDB().userDao();
-        Login.deleteOldDataFromDatabase(
+
+
+        Login_vpn.deleteOldDataFromDatabase(
                 gdao_test, cdao_test, tdao_test, pdao_test, gsdao_test, grdao_test, edao_test, cetDao_test
         );
         editor_test.clear().commit();
+
         boolean fetch_merge_res = Login_vpn.fetch_merge(
                 FetchService.this,
                 cookie,
@@ -389,6 +442,8 @@ public class FetchService extends IntentService {
             wan_end();
             return;
         }
+
+
         /** get old delay_week */
         List<Integer> delay_week_to_apply = new LinkedList<>();
         List<TermInfo> new_terms = tdao_test.selectAll();
