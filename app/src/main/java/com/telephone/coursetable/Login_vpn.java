@@ -1,5 +1,6 @@
 package com.telephone.coursetable;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,7 +8,9 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -50,6 +53,7 @@ import com.telephone.coursetable.Library.LibraryActivity;
 import com.telephone.coursetable.Merge.Merge;
 import com.telephone.coursetable.OCR.OCR;
 
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -74,12 +78,12 @@ public class Login_vpn extends AppCompatActivity {
     private CETDao cetDao = null;
     private SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
 
-    private String sid = null;
-    private String aaw_pwd = null;//教务处密码
-    private String sys_pwd = null;//学分系统密码
-    private String vpn_pwd = null;
-    private String cookie = null;
-    private String ck = null;
+    private String sid = "";
+    private String aaw_pwd = "";//教务处密码
+    private String sys_pwd = "";//学分系统密码
+    private String vpn_pwd = "";
+    private String cookie = "";
+    private String ck = "";
 
     private StringBuilder cookie_builder;
     private String tip;
@@ -89,7 +93,50 @@ public class Login_vpn extends AppCompatActivity {
         setContentView(R.layout.activity_login_vpn_no_checkcode);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
 
+        Button btn_pwd = ((Button)findViewById(R.id.show_pwd));
+
+        btn_pwd.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        ((AutoCompleteTextView)findViewById(R.id.passwd_input)).setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        btn_pwd.setBackground(getDrawable(R.drawable.eye_open));
+                        clearIMAndFocus();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ((AutoCompleteTextView)findViewById(R.id.passwd_input)).setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        btn_pwd.setBackground(getDrawable(R.drawable.eye_close));
+                        clearIMAndFocus();
+                        break;
+                }
+                return false;
+            }
+        });
+
+
+        new Thread((Runnable) () -> {
+            updateUserNameAutoFill();
+            //if any user is activated, fill his sid and pwd in the input box
+            List<User> ac_user = udao.getActivatedUser();
+            if (!ac_user.isEmpty()){
+                final User u = ac_user.get(0);
+                runOnUiThread((Runnable) () -> {
+
+                    ((AutoCompleteTextView)findViewById(R.id.sid_input)).setText(u.username);
+                    ((AutoCompleteTextView)findViewById(R.id.passwd_input)).setText(u.vpn_password);
+
+                    aaw_pwd = u.aaw_password;
+                    sys_pwd = u.password;
+
+                });
+            }else {
+                ((AutoCompleteTextView)findViewById(R.id.sid_input)).requestFocus();
+            }
+        }).start();
    }
+
+
 
     //clear
     private void system_login(String sid) {
@@ -112,6 +159,9 @@ public class Login_vpn extends AppCompatActivity {
                     ((TextView) findViewById(R.id.sid_input)).setText(sid);
                     ((TextView) findViewById(R.id.sid_input)).setEnabled(false);
 
+                    ((TextView)findViewById(R.id.aaw_pwd_input)).setText(aaw_pwd);
+                    ((TextView)findViewById(R.id.sys_pwd_input)).setText(sys_pwd);
+
                     ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
 
                 });
@@ -120,9 +170,8 @@ public class Login_vpn extends AppCompatActivity {
     }
 
 
-    private void updateUserNameAutoFill() {
+    private void updateUserNameAutoFill(){
         final ArrayAdapter<String> ada = new ArrayAdapter<>(Login_vpn.this, android.R.layout.simple_dropdown_item_1line, udao.selectAllUserName());
-
         runOnUiThread(() -> {
             ((AutoCompleteTextView) findViewById(R.id.sid_input)).setAdapter(ada);
             ((AutoCompleteTextView) findViewById(R.id.sid_input)).setOnDismissListener(() -> {
@@ -131,19 +180,23 @@ public class Login_vpn extends AppCompatActivity {
                     final List<User> userSelected = udao.selectUser(((AutoCompleteTextView) findViewById(R.id.sid_input)).getText().toString());
                     if (!userSelected.isEmpty()) {
                         runOnUiThread(() -> {
-                            ((AutoCompleteTextView) findViewById(R.id.passwd_input)).setText(userSelected.get(0).password);
+                            aaw_pwd = userSelected.get(0).aaw_password;
+                            sys_pwd = userSelected.get(0).password;
+                            ((AutoCompleteTextView) findViewById(R.id.passwd_input)).setText(userSelected.get(0).vpn_password);
 
                         });
                     }
                 }).start();
             });
         });
-
     }
 
 
     //clear
     private void lock1(){
+
+        ((AutoCompleteTextView)findViewById(R.id.sid_input)).setEnabled(false);
+        ((AutoCompleteTextView)findViewById(R.id.passwd_input)).setEnabled(false);
         ((Button)findViewById(R.id.button)).setEnabled(false);
         ((Button)findViewById(R.id.button2)).setEnabled(false);
         ((ProgressBar)findViewById(R.id.progressBar)).setVisibility(View.VISIBLE);
@@ -156,6 +209,8 @@ public class Login_vpn extends AppCompatActivity {
 
     //clear
     private void unlock1(boolean clickable){
+        ((AutoCompleteTextView)findViewById(R.id.sid_input)).setEnabled(clickable);
+        ((AutoCompleteTextView)findViewById(R.id.passwd_input)).setEnabled(clickable);
         ((Button)findViewById(R.id.button)).setEnabled(clickable);
         ((Button)findViewById(R.id.button2)).setEnabled(clickable);
     }
@@ -181,6 +236,7 @@ public class Login_vpn extends AppCompatActivity {
         EditText ets = (EditText) findViewById(R.id.sid_input);
         EditText etp = (EditText) findViewById(R.id.passwd_input);
         EditText etw = (EditText) findViewById(R.id.aaw_pwd_input);
+        EditText ety = (EditText)findViewById(R.id.sys_pwd_input);
 
 
         if (ets != null) {
@@ -198,6 +254,12 @@ public class Login_vpn extends AppCompatActivity {
             etw.setEnabled(!etw.isEnabled());
             etw.clearFocus();
         }
+        if (ety != null) {
+            ety.setEnabled(!etw.isEnabled());
+            ety.setEnabled(!etw.isEnabled());
+            ety.clearFocus();
+        }
+
     }
 
 
@@ -469,6 +531,10 @@ public class Login_vpn extends AppCompatActivity {
                     runOnUiThread((Runnable) () -> {
                         ((AutoCompleteTextView) findViewById(R.id.sid_input)).setText("");
                         ((AutoCompleteTextView) findViewById(R.id.passwd_input)).setText("");
+
+                        aaw_pwd = "";
+                        sys_pwd = "";
+
                         setFocusToEditText((EditText) findViewById(R.id.sid_input));
                     });
          }).start();
@@ -579,17 +645,21 @@ public class Login_vpn extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+
                 //get cookie
                 cookie = Login_vpn.vpn_login(Login_vpn.this, sid, vpn_pwd);
 
                 String tip;
-                //fail
+                //fail : password or web
                 if (cookie == null) {
                     //reason
-                    tip = "请检查用户名、密码和网络是否正确。";
+                    tip = "WebVPN验证失败。";
 
                 }
-
+                else if(cookie.equals(getResources().getString(R.string.wan_vpn_ip_forbidden))){
+                    tip = "WebVPN验证次数过多，请稍后重试。";
+                }
                 //success
                 else {
                     tip = "VPN登录成功，正在跳转界面。";
@@ -597,15 +667,38 @@ public class Login_vpn extends AppCompatActivity {
                 }
 
 
+                final String NAME = "login_thread_1()";
+
+                /** detect new activity || skip no activity */
+                if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.NULL)){
+                    Log.e(NAME, "no activity is running, login = " + Login_vpn.this.toString() + " canceled");
+                    runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                Log.e(NAME, "login activity pointer = " + Login_vpn.this.toString());
+                Log.e(NAME, "running activity pointer = " + MyApp.getRunning_activity_pointer().toString());
+                if (!Login_vpn.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
+                    Log.e(NAME, "new running activity detected = " + MyApp.getRunning_activity_pointer().toString() + ", login = " + Login_vpn.this.toString() + " canceled");
+                    runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
                 runOnUiThread(() -> {
                     Snackbar.make(view, tip, BaseTransientBottomBar.LENGTH_LONG).show();
-                    if (tip.equals("请检查用户名、密码和网络是否正确。")) {
-                        ((EditText) findViewById(R.id.passwd_input)).setText("");
-                        setFocusToEditText((EditText) findViewById(R.id.passwd_input));
+                    if (tip.equals("WebVPN验证失败。")) {
+
+                        ((ProgressBar) findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
+                        unlock1(true);
+
+                    }else if(tip.equals("WebVPN验证次数过多，请稍后重试。")){
+
+                        ((ProgressBar) findViewById(R.id.progressBar)).setVisibility(View.INVISIBLE);
+                        unlock1(true);
+
                     } else {
                         system_login(sid);
                     }
-                    unlock1(true);
+
                     Log.e("d", "fe");
                 });
             }
@@ -693,11 +786,30 @@ public class Login_vpn extends AppCompatActivity {
                 final SharedPreferences shared_pref = MyApp.getCurrentSharedPreference();
                 final SharedPreferences.Editor editor = MyApp.getCurrentSharedPreferenceEditor();
 
-                if (!Login_vpn.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
+//                if (!Login_vpn.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
+//
+//                    runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
+//                    return;
+//                }
 
+
+                final String NAME = "login_thread_2()";
+
+                /** detect new activity || skip no activity */
+                if (MyApp.getRunning_activity().equals(MyApp.RunningActivity.NULL)){
+                    Log.e(NAME, "no activity is running, login = " + Login_vpn.this.toString() + " canceled");
                     runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
                     return;
                 }
+                Log.e(NAME, "login activity pointer = " + Login_vpn.this.toString());
+                Log.e(NAME, "running activity pointer = " + MyApp.getRunning_activity_pointer().toString());
+                if (!Login_vpn.this.toString().equals(MyApp.getRunning_activity_pointer().toString())){
+                    Log.e(NAME, "new running activity detected = " + MyApp.getRunning_activity_pointer().toString() + ", login = " + Login_vpn.this.toString() + " canceled");
+                    runOnUiThread(()->Toast.makeText(Login_vpn.this, "登录取消", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+
 
                 //
                 /** insert/replace new user into database */
