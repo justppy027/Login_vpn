@@ -191,10 +191,9 @@ public class FetchService extends IntentService {
      *
      * **/
 
-    private static void NoticePush(@NonNull Locate locate){
+    private static void NoticePush(@NonNull Locate locate, GoToClassDao gdao){
 
-        GoToClassDao gdao = null;
-        GradesDao grdao = null;
+
 
         List<ShowTableNode> nodes = null;
         if (locate.term != null){

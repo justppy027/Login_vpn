@@ -179,6 +179,17 @@
         app:layout_constraintStart_toEndOf="@id/barrier2"
         app:layout_constraintTop_toBottomOf="@+id/sid_input" />
 
+    <Button
+        android:id="@+id/show_pwd_21"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/eye_close"
+        app:layout_constraintBottom_toBottomOf="@+id/aaw_pwd_input"
+        app:layout_constraintDimensionRatio="w, 1:1"
+        app:layout_constraintEnd_toEndOf="@+id/aaw_pwd_input"
+        app:layout_constraintTop_toTopOf="@+id/aaw_pwd_input" />
+
+
     <AutoCompleteTextView
         android:id="@+id/sys_pwd_input"
         android:layout_width="0dp"
@@ -194,6 +205,17 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
         app:layout_constraintStart_toEndOf="@id/barrier2"
         app:layout_constraintTop_toBottomOf="@+id/aaw_pwd_input" />
+
+    <Button
+        android:id="@+id/show_pwd_22"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/eye_close"
+        app:layout_constraintBottom_toBottomOf="@+id/sys_pwd_input"
+        app:layout_constraintDimensionRatio="w, 1:1"
+        app:layout_constraintEnd_toEndOf="@+id/sys_pwd_input"
+        app:layout_constraintTop_toTopOf="@+id/sys_pwd_input" />
+
 
     <ProgressBar
         android:id="@+id/progressBar"
